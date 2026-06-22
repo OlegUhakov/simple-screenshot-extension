@@ -180,8 +180,20 @@
 
   function selectTool(id) {
     E.tool = id;
+    var slider = document.getElementById('screenshot-size-slider');
+    var label = document.getElementById('screenshot-size-label');
     if (id === 'blur') {
-      E.blurSize = E.size;
+      E.blurSize = Math.min(E.size, 30);
+      if (slider) {
+        slider.max = 30;
+        if (E.size > 30) {
+          E.size = 30;
+          slider.value = 30;
+          label.textContent = '30px';
+        }
+      }
+    } else {
+      if (slider) slider.max = 100;
     }
     var btns = document.querySelectorAll('.screenshot-tool-btn');
     btns.forEach(function (b) { b.classList.remove('active'); });
@@ -422,7 +434,7 @@
     var tempCtx = tempCanvas.getContext('2d');
     tempCtx.putImageData(imageData, 0, 0);
 
-    var blurAmount = E.blurSize || 10;
+    var blurAmount = Math.min(E.blurSize || 10, 30);
     tempCtx.filter = 'blur(' + blurAmount + 'px)';
     tempCtx.drawImage(tempCanvas, 0, 0);
 
