@@ -61,7 +61,7 @@
 #screenshot-editor-canvas-wrapper {
   overflow: auto;
   position: relative;
-  background: #e0e0e0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;

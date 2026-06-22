@@ -523,7 +523,7 @@
     resizeHandle.innerHTML = '\u21F2';
     el.appendChild(resizeHandle);
 
-    var startX, startY, startW, startH, isResizing = false;
+    var startX, startY, startW, startH, aspectRatio, isResizing = false;
 
     resizeHandle.addEventListener('mousedown', function (e) {
       e.preventDefault();
@@ -534,17 +534,23 @@
       var rect = el.getBoundingClientRect();
       startW = rect.width;
       startH = rect.height;
+      aspectRatio = startW / startH;
       document.body.style.cursor = 'se-resize';
       document.body.style.userSelect = 'none';
     });
 
     document.addEventListener('mousemove', function (e) {
       if (!isResizing) return;
-      var newW = startW + (e.clientX - startX);
-      var newH = startH + (e.clientY - startY);
-      el.style.width = Math.max(300, newW) + 'px';
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dx + dy < 0) dist = -dist;
+      var newW = Math.max(300, startW + dist);
+      var newH = newW / aspectRatio;
+      el.style.width = newW + 'px';
+      el.style.height = newH + 'px';
+      el.style.maxWidth = '95vw';
       el.style.maxHeight = '95vh';
-      el.style.overflow = 'hidden';
     });
 
     document.addEventListener('mouseup', function () {

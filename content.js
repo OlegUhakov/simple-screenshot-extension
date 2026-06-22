@@ -16,44 +16,62 @@ window.addEventListener('message', (event) => {
   }
 });
 
-async function handleCapture(mode, delay) {
-  if (delay > 0) {
-    await new Promise(r => setTimeout(r, delay * 1000));
-  } else {
-    await new Promise(r => setTimeout(r, 200));
-  }
+function showError(msg) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#dc3545;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999999;font:14px Arial,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 3000);
+}
 
-  if (mode === 'fullscreen') {
-    const dataUrl = await requestCapture();
-    await openEditor(dataUrl);
-  } else if (mode === 'select') {
-    const rect = await selectArea();
-    const fullDataUrl = await requestCapture();
-    const croppedDataUrl = await cropImage(fullDataUrl, rect);
-    await openEditor(croppedDataUrl);
+async function handleCapture(mode, delay) {
+  try {
+    if (delay > 0) {
+      await new Promise(r => setTimeout(r, delay * 1000));
+    } else {
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    if (mode === 'fullscreen') {
+      const dataUrl = await requestCapture();
+      if (!dataUrl) { showError('Capture failed'); return; }
+      await openEditor(dataUrl);
+    } else if (mode === 'select') {
+      const rect = await selectArea();
+      if (!rect || rect.w < 5 || rect.h < 5) return;
+      const fullDataUrl = await requestCapture();
+      if (!fullDataUrl) { showError('Capture failed'); return; }
+      const croppedDataUrl = await cropImage(fullDataUrl, rect);
+      if (!croppedDataUrl) { showError('Crop failed'); return; }
+      await openEditor(croppedDataUrl);
+    }
+  } catch (e) {
+    showError('Error: ' + e.message);
   }
 }
 
 function requestCapture() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let attempts = 0;
     function tryCapture() {
       attempts++;
       chrome.runtime.sendMessage({ action: 'captureTab' }, (response) => {
         if (chrome.runtime.lastError) {
           if (attempts < 3) {
-            setTimeout(tryCapture, 200);
+            setTimeout(tryCapture, 300);
           } else {
-            reject(chrome.runtime.lastError.message);
+            resolve(null);
           }
-        } else if (response?.error) {
+        } else if (response && response.error) {
           if (attempts < 3) {
-            setTimeout(tryCapture, 200);
+            setTimeout(tryCapture, 300);
           } else {
-            reject(response.error);
+            resolve(null);
           }
-        } else {
+        } else if (response && response.dataUrl) {
           resolve(response.dataUrl);
+        } else {
+          resolve(null);
         }
       });
     }
@@ -65,16 +83,15 @@ function selectArea() {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.id = 'screenshot-select-overlay';
-    overlay.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4); z-index: 999999; cursor: crosshair;
-    `;
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:999999;cursor:crosshair;';
+
+    const tip = document.createElement('div');
+    tip.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font:16px Arial,sans-serif;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,0.5);';
+    tip.textContent = 'Click and drag to select area';
+    overlay.appendChild(tip);
 
     const selection = document.createElement('div');
-    selection.style.cssText = `
-      position: absolute; border: 2px dashed #00cc44;
-      background: transparent; display: none; pointer-events: none;
-    `;
+    selection.style.cssText = 'position:absolute;border:2px dashed #00cc44;background:transparent;display:none;pointer-events:none;';
     overlay.appendChild(selection);
     document.body.appendChild(overlay);
 
@@ -82,13 +99,11 @@ function selectArea() {
 
     const onMouseDown = (e) => {
       isDown = true;
+      tip.style.display = 'none';
       const rect = overlay.getBoundingClientRect();
       startX = e.clientX - rect.left;
       startY = e.clientY - rect.top;
-      selection.style.cssText = `
-        position: absolute; border: 2px dashed #00cc44;
-        background: transparent; pointer-events: none;
-      `;
+      selection.style.cssText = 'position:absolute;border:2px dashed #00cc44;background:transparent;pointer-events:none;';
       selection.style.left = startX + 'px';
       selection.style.top = startY + 'px';
       selection.style.width = '0px';
@@ -127,6 +142,11 @@ function selectArea() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
 
+      if (w < 5 || h < 5) {
+        resolve(null);
+        return;
+      }
+
       const dpr = window.devicePixelRatio || 1;
       const scrollX = window.scrollX || window.pageXOffset;
       const scrollY = window.scrollY || window.pageYOffset;
@@ -156,6 +176,7 @@ function cropImage(dataUrl, rect) {
       ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h);
       resolve(canvas.toDataURL('image/png'));
     };
+    img.onerror = () => resolve(null);
     img.src = dataUrl;
   });
 }
@@ -171,7 +192,7 @@ async function openEditor(dataUrl) {
 }
 
 function loadEditor() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL('editor.css');
@@ -182,14 +203,10 @@ function loadEditor() {
         editorLoaded = true;
         resolve();
       };
-      script.onerror = () => {
-        reject(new Error('Failed to load editor.js'));
-      };
+      script.onerror = () => resolve();
       document.head.appendChild(script);
     };
-    link.onerror = () => {
-      reject(new Error('Failed to load editor.css'));
-    };
+    link.onerror = () => resolve();
     document.head.appendChild(link);
   });
 }
