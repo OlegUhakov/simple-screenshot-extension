@@ -170,7 +170,7 @@ function cropImage(dataUrl, rect) {
       const canvas = document.createElement('canvas');
       canvas.width = rect.w;
       canvas.height = rect.h;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
       ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h);
       resolve(canvas.toDataURL('image/png'));
     };
