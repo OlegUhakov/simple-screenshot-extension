@@ -12,7 +12,7 @@
     cleanups: []
   };
 
-  document.addEventListener('screenshot-open-editor', function (e) {
+  function onOpenEditor(e) {
     if (E.container) closeEditor();
     E.dataUrl = e.detail.dataUrl;
     E.dpr = e.detail.devicePixelRatio || 1;
@@ -24,11 +24,14 @@
       buildUI(img);
     };
     img.src = E.dataUrl;
-  });
+  }
 
-  document.addEventListener('screenshot-close-editor', function () {
+  function onCloseEditor() {
     if (E.container) closeEditor();
-  });
+  }
+
+  document.addEventListener('screenshot-open-editor', onOpenEditor);
+  document.addEventListener('screenshot-close-editor', onCloseEditor);
 
   function closeEditor() {
     E.cleanups.forEach(function (fn) { fn(); });
@@ -37,8 +40,18 @@
       E.container.remove();
       E.container = null;
     }
-    E.history = [];
-    E.historyIndex = -1;
+    document.removeEventListener('screenshot-open-editor', onOpenEditor);
+    document.removeEventListener('screenshot-close-editor', onCloseEditor);
+    E = {
+      dataUrl: null, canvas: null, ctx: null,
+      w: 0, h: 0, dpr: 1,
+      tool: 'pencil', color: '#000000', size: 3,
+      history: [], historyIndex: -1,
+      drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
+      container: null, textInput: null, img: null,
+      blurSize: 10,
+      cleanups: []
+    };
   }
 
   function buildUI(img) {
@@ -91,6 +104,10 @@
     setupDrag(header, el);
     setupResize(el);
     addVersionLabel(el);
+
+    E.container.addEventListener('click', function (e) {
+      if (e.target === E.container) closeEditor();
+    });
   }
 
   function buildToolbar() {
