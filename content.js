@@ -148,12 +148,10 @@ function selectArea() {
       }
 
       const dpr = window.devicePixelRatio || 1;
-      const scrollX = window.scrollX || window.pageXOffset;
-      const scrollY = window.scrollY || window.pageYOffset;
 
       resolve({
-        x: (x + scrollX) * dpr,
-        y: (y + scrollY) * dpr,
+        x: x * dpr,
+        y: y * dpr,
         w: w * dpr,
         h: h * dpr
       });
