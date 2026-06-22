@@ -6,6 +6,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'downloadFile') {
+    chrome.runtime.sendMessage({
+      action: 'downloadFile',
+      dataUrl: event.data.dataUrl,
+      filename: event.data.filename
+    });
+  }
+});
+
 async function handleCapture(mode, delay) {
   if (delay > 0) {
     await showCountdown(delay);

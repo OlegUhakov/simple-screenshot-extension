@@ -454,11 +454,11 @@
 
   function saveImage() {
     var dataUrl = E.canvas.toDataURL('image/png');
-    chrome.runtime.sendMessage({
+    window.postMessage({
       action: 'downloadFile',
       dataUrl: dataUrl,
       filename: 'screenshot-' + Date.now() + '.png'
-    });
+    }, '*');
   }
 
   function copyImage() {
