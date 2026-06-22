@@ -533,8 +533,8 @@
       isResizing = true;
       startX = e.clientX;
       startY = e.clientY;
-      startW = E.canvas.offsetWidth;
-      startH = E.canvas.offsetHeight;
+      startW = el.offsetWidth;
+      startH = el.offsetHeight;
       document.body.style.cursor = 'se-resize';
       document.body.style.userSelect = 'none';
     });
@@ -543,16 +543,22 @@
       if (!isResizing) return;
       var dx = e.clientX - startX;
       var dy = e.clientY - startY;
-      var newW = Math.max(100, startW + dx);
-      var newH = Math.max(50, startH + dy);
+      var newW = Math.max(200, startW + dx);
+      var newH = Math.max(350, startH + dy);
 
-      var maxW = window.innerWidth * 0.9;
-      var maxH = window.innerHeight * 0.85;
-      newW = Math.min(newW, maxW);
-      newH = Math.min(newH, maxH);
+      newW = Math.min(newW, window.innerWidth * 0.95);
+      newH = Math.min(newH, window.innerHeight * 0.95);
+
+      el.style.width = newW + 'px';
+      el.style.height = newH + 'px';
+
+      var headerEl = document.getElementById('screenshot-editor-header');
+      var toolbarEl = document.getElementById('screenshot-editor-toolbar');
+      var headerH = headerEl ? headerEl.offsetHeight : 44;
+      var toolbarH = toolbarEl ? toolbarEl.offsetHeight : 52;
 
       E.canvas.style.width = newW + 'px';
-      E.canvas.style.height = newH + 'px';
+      E.canvas.style.height = (newH - headerH - toolbarH) + 'px';
       E.canvas.style.maxWidth = 'none';
       E.canvas.style.maxHeight = 'none';
     });
