@@ -8,7 +8,8 @@
     history: [], historyIndex: -1,
     drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
     container: null, textInput: null, img: null,
-    blurSize: 10
+    blurSize: 10,
+    cleanups: []
   };
 
   document.addEventListener('screenshot-open-editor', function (e) {
@@ -26,6 +27,8 @@
   });
 
   function closeEditor() {
+    E.cleanups.forEach(function (fn) { fn(); });
+    E.cleanups = [];
     if (E.container) {
       E.container.remove();
       E.container = null;
@@ -557,16 +560,16 @@
   function setupDrag(handle, el) {
     var offsetX, offsetY, isDragging = false;
 
-    handle.addEventListener('mousedown', function (e) {
+    function onMouseDown(e) {
       if (e.target.tagName === 'BUTTON') return;
       isDragging = true;
       var rect = el.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
       handle.style.cursor = 'grabbing';
-    });
+    }
 
-    document.addEventListener('mousemove', function (e) {
+    function onMouseMove(e) {
       if (!isDragging) return;
       var containerRect = E.canvas.closest('#screenshot-editor-container').getBoundingClientRect();
       var left = e.clientX - containerRect.left - offsetX;
@@ -574,13 +577,22 @@
       el.style.position = 'absolute';
       el.style.left = left + 'px';
       el.style.top = top + 'px';
-    });
+    }
 
-    document.addEventListener('mouseup', function () {
+    function onMouseUp() {
       if (isDragging) {
         isDragging = false;
         handle.style.cursor = 'move';
       }
+    }
+
+    handle.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    E.cleanups.push(function () {
+      handle.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     });
   }
 
@@ -592,7 +604,7 @@
 
     var startX, startY, startW, startH, isResizing = false;
 
-    resizeHandle.addEventListener('mousedown', function (e) {
+    function onMouseDown(e) {
       e.preventDefault();
       e.stopPropagation();
       isResizing = true;
@@ -602,9 +614,9 @@
       startH = el.offsetHeight;
       document.body.style.cursor = 'se-resize';
       document.body.style.userSelect = 'none';
-    });
+    }
 
-    document.addEventListener('mousemove', function (e) {
+    function onMouseMove(e) {
       if (!isResizing) return;
       var dx = e.clientX - startX;
       var dy = e.clientY - startY;
@@ -626,14 +638,23 @@
       E.canvas.style.height = (newH - headerH - toolbarH) + 'px';
       E.canvas.style.maxWidth = 'none';
       E.canvas.style.maxHeight = 'none';
-    });
+    }
 
-    document.addEventListener('mouseup', function () {
+    function onMouseUp() {
       if (isResizing) {
         isResizing = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
       }
+    }
+
+    resizeHandle.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    E.cleanups.push(function () {
+      resizeHandle.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     });
   }
 
