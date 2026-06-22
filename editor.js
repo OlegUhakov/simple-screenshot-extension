@@ -77,8 +77,6 @@
     document.body.appendChild(E.container);
 
     E.ctx = E.canvas.getContext('2d');
-    E.ctx.fillStyle = '#ffffff';
-    E.ctx.fillRect(0, 0, E.w, E.h);
     E.ctx.drawImage(img, 0, 0);
 
     saveHistory();
@@ -149,7 +147,7 @@
     slider.type = 'range';
     slider.id = 'screenshot-size-slider';
     slider.min = 1;
-    slider.max = 50;
+    slider.max = 100;
     slider.value = 3;
     slider.addEventListener('input', function (e) {
       E.size = parseInt(e.target.value, 10);
@@ -457,20 +455,23 @@
 
     var input = document.createElement('input');
     input.type = 'text';
+    input.size = 1;
     input.id = 'screenshot-text-input';
     input.style.cssText = [
       'position: absolute;',
       'left: ' + (p.x * scaleX + rect.left - wrapper.getBoundingClientRect().left) + 'px;',
       'top: ' + (p.y * scaleY + rect.top - wrapper.getBoundingClientRect().top) + 'px;',
       'z-index: 9999999;',
-      'background: #fff;',
-      'border: 1px solid #00cc44;',
+      'background: transparent;',
+      'border: none;',
+      'outline: none;',
+      'width: auto;',
       'color: ' + E.color + ';',
+      'caret-color: #000;',
       'font-size: ' + Math.max(16, E.size * 3) + 'px;',
       'font-family: Arial, sans-serif;',
-      'outline: none;',
-      'padding: 2px 4px;',
-      'min-width: 40px;'
+      'padding: 0;',
+      'min-width: 0;'
     ].join('');
 
     wrapper.appendChild(input);
