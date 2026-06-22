@@ -1,0 +1,174 @@
+#screenshot-editor-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#screenshot-editor {
+  background: #1e1e2e;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  max-width: 95vw;
+  max-height: 95vh;
+  overflow: hidden;
+  user-select: none;
+}
+
+#screenshot-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #2a2a3e;
+  cursor: move;
+  border-radius: 12px 12px 0 0;
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#screenshot-editor-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+#screenshot-editor-close:hover {
+  color: #ff5555;
+}
+
+#screenshot-editor-body {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+#screenshot-editor-canvas-wrapper {
+  overflow: auto;
+  position: relative;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+#screenshot-editor-canvas {
+  display: block;
+  image-rendering: auto;
+}
+
+#screenshot-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #2a2a3e;
+  border-top: 1px solid #3a3a4e;
+  flex-wrap: wrap;
+}
+
+#screenshot-editor-toolbar .tool-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border-right: 1px solid #3a3a4e;
+}
+#screenshot-editor-toolbar .tool-group:last-child {
+  border-right: none;
+}
+
+.screenshot-tool-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #3a3a4e;
+  color: #ccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.screenshot-tool-btn:hover {
+  background: #4a4a5e;
+  color: #fff;
+}
+.screenshot-tool-btn.active {
+  border-color: #00cc44;
+  background: #4a4a5e;
+  color: #fff;
+}
+
+.screenshot-color-swatch {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.screenshot-color-swatch:hover {
+  transform: scale(1.15);
+}
+.screenshot-color-swatch.active {
+  border-color: #fff;
+  box-shadow: 0 0 6px rgba(255,255,255,0.4);
+}
+
+#screenshot-color-picker {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+#screenshot-size-slider {
+  width: 80px;
+  accent-color: #00cc44;
+  cursor: pointer;
+}
+
+.screenshot-size-label {
+  color: #aaa;
+  font-size: 11px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.screenshot-action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.screenshot-action-btn.undo { background: #6c757d; color: #fff; }
+.screenshot-action-btn.undo:hover { background: #5a6268; }
+.screenshot-action-btn.clear { background: #dc3545; color: #fff; }
+.screenshot-action-btn.clear:hover { background: #c82333; }
+.screenshot-action-btn.save { background: #00cc44; color: #fff; }
+.screenshot-action-btn.save:hover { background: #00b33a; }
+.screenshot-action-btn.copy { background: #0d6efd; color: #fff; }
+.screenshot-action-btn.copy:hover { background: #0b5ed7; }
