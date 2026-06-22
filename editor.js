@@ -26,6 +26,10 @@
     img.src = E.dataUrl;
   });
 
+  document.addEventListener('screenshot-close-editor', function () {
+    if (E.container) closeEditor();
+  });
+
   function closeEditor() {
     E.cleanups.forEach(function (fn) { fn(); });
     E.cleanups = [];

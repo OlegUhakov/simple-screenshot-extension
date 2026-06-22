@@ -16,6 +16,12 @@ window.addEventListener('message', (event) => {
   }
 });
 
+function cleanupPrevious() {
+  var oldOverlay = document.getElementById('screenshot-select-overlay');
+  if (oldOverlay) oldOverlay.remove();
+  document.dispatchEvent(new CustomEvent('screenshot-close-editor'));
+}
+
 function showError(msg) {
   const d = document.createElement('div');
   d.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#dc3545;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999999;font:14px Arial,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
@@ -26,6 +32,8 @@ function showError(msg) {
 
 async function handleCapture(mode, delay) {
   try {
+    cleanupPrevious();
+
     if (delay > 0) {
       await new Promise(r => setTimeout(r, delay * 1000));
     } else {
