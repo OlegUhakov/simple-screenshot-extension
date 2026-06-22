@@ -90,7 +90,7 @@ function selectArea() {
     const selection = document.createElement('div');
     selection.style.cssText = `
       position: absolute; border: 2px dashed #00cc44;
-      background: rgba(0, 200, 68, 0.25); display: none; pointer-events: none;
+      background: transparent; display: none; pointer-events: none;
     `;
     overlay.appendChild(selection);
     document.body.appendChild(overlay);
@@ -104,7 +104,7 @@ function selectArea() {
       startY = e.clientY - rect.top;
       selection.style.cssText = `
         position: absolute; border: 2px dashed #00cc44;
-        background: rgba(0, 200, 68, 0.25); pointer-events: none;
+        background: transparent; pointer-events: none;
       `;
       selection.style.left = startX + 'px';
       selection.style.top = startY + 'px';
