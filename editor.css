@@ -13,15 +13,16 @@
 }
 
 #screenshot-editor {
-  background: #1e1e2e;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
   max-width: 95vw;
   max-height: 95vh;
   overflow: hidden;
   user-select: none;
+  position: relative;
 }
 
 #screenshot-editor-header {
@@ -29,12 +30,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: #2a2a3e;
+  background: #f0f0f0;
   cursor: move;
   border-radius: 12px 12px 0 0;
-  color: #ccc;
+  color: #333;
   font-size: 14px;
   font-weight: 600;
+  border-bottom: 1px solid #ddd;
 }
 
 #screenshot-editor-close {
@@ -59,7 +61,7 @@
 #screenshot-editor-canvas-wrapper {
   overflow: auto;
   position: relative;
-  background: #333;
+  background: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,8 +78,8 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  background: #2a2a3e;
-  border-top: 1px solid #3a3a4e;
+  background: #f5f5f5;
+  border-top: 1px solid #ddd;
   flex-wrap: wrap;
 }
 
@@ -86,7 +88,7 @@
   align-items: center;
   gap: 4px;
   padding: 0 6px;
-  border-right: 1px solid #3a3a4e;
+  border-right: 1px solid #ddd;
 }
 #screenshot-editor-toolbar .tool-group:last-child {
   border-right: none;
@@ -97,8 +99,8 @@
   height: 32px;
   border: 2px solid transparent;
   border-radius: 6px;
-  background: #3a3a4e;
-  color: #ccc;
+  background: #e8e8e8;
+  color: #333;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -107,13 +109,13 @@
   transition: all 0.15s;
 }
 .screenshot-tool-btn:hover {
-  background: #4a4a5e;
-  color: #fff;
+  background: #ddd;
+  color: #000;
 }
 .screenshot-tool-btn.active {
-  border-color: #00cc44;
-  background: #4a4a5e;
-  color: #fff;
+  border-color: #ccc;
+  background: #ccc;
+  color: #000;
 }
 
 .screenshot-color-swatch {
@@ -128,8 +130,8 @@
   transform: scale(1.15);
 }
 .screenshot-color-swatch.active {
-  border-color: #fff;
-  box-shadow: 0 0 6px rgba(255,255,255,0.4);
+  border-color: #999;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
 }
 
 #screenshot-color-picker {
@@ -144,12 +146,12 @@
 
 #screenshot-size-slider {
   width: 80px;
-  accent-color: #00cc44;
+  accent-color: #666;
   cursor: pointer;
 }
 
 .screenshot-size-label {
-  color: #aaa;
+  color: #666;
   font-size: 11px;
   min-width: 32px;
   text-align: center;
@@ -164,11 +166,39 @@
   font-weight: 500;
   transition: all 0.15s;
 }
-.screenshot-action-btn.undo { background: #6c757d; color: #fff; }
-.screenshot-action-btn.undo:hover { background: #5a6268; }
+.screenshot-action-btn.undo { background: #999; color: #fff; }
+.screenshot-action-btn.undo:hover { background: #888; }
 .screenshot-action-btn.clear { background: #dc3545; color: #fff; }
 .screenshot-action-btn.clear:hover { background: #c82333; }
-.screenshot-action-btn.save { background: #00cc44; color: #fff; }
-.screenshot-action-btn.save:hover { background: #00b33a; }
-.screenshot-action-btn.copy { background: #0d6efd; color: #fff; }
-.screenshot-action-btn.copy:hover { background: #0b5ed7; }
+.screenshot-action-btn.save { background: #28a745; color: #fff; }
+.screenshot-action-btn.save:hover { background: #218838; }
+.screenshot-action-btn.copy { background: #007bff; color: #fff; }
+.screenshot-action-btn.copy:hover { background: #0069d9; }
+
+.screenshot-editor-resize {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: se-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 12px;
+  user-select: none;
+}
+.screenshot-editor-resize:hover {
+  color: #333;
+}
+
+.screenshot-editor-version {
+  position: absolute;
+  bottom: 4px;
+  right: 24px;
+  font-size: 10px;
+  color: #aaa;
+  user-select: none;
+  pointer-events: none;
+}

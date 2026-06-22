@@ -18,7 +18,7 @@ window.addEventListener('message', (event) => {
 
 async function handleCapture(mode, delay) {
   if (delay > 0) {
-    await showCountdown(delay);
+    await new Promise(r => setTimeout(r, delay * 1000));
   } else {
     await new Promise(r => setTimeout(r, 200));
   }
@@ -36,45 +36,28 @@ async function handleCapture(mode, delay) {
 
 function requestCapture() {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ action: 'captureTab' }, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError.message);
-      } else if (response?.error) {
-        reject(response.error);
-      } else {
-        resolve(response.dataUrl);
-      }
-    });
-  });
-}
-
-function showCountdown(seconds) {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.id = 'screenshot-countdown-overlay';
-    overlay.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); display: flex; align-items: center;
-      justify-content: center; z-index: 999999; font-family: Arial, sans-serif;
-    `;
-    const numEl = document.createElement('div');
-    numEl.style.cssText = 'color: #fff; font-size: 120px; font-weight: bold; text-shadow: 0 4px 20px rgba(0,0,0,0.5);';
-    overlay.appendChild(numEl);
-    document.body.appendChild(overlay);
-
-    let remaining = seconds;
-    numEl.textContent = remaining;
-
-    const interval = setInterval(() => {
-      remaining--;
-      if (remaining > 0) {
-        numEl.textContent = remaining;
-      } else {
-        clearInterval(interval);
-        overlay.remove();
-        setTimeout(resolve, 200);
-      }
-    }, 1000);
+    let attempts = 0;
+    function tryCapture() {
+      attempts++;
+      chrome.runtime.sendMessage({ action: 'captureTab' }, (response) => {
+        if (chrome.runtime.lastError) {
+          if (attempts < 3) {
+            setTimeout(tryCapture, 200);
+          } else {
+            reject(chrome.runtime.lastError.message);
+          }
+        } else if (response?.error) {
+          if (attempts < 3) {
+            setTimeout(tryCapture, 200);
+          } else {
+            reject(response.error);
+          }
+        } else {
+          resolve(response.dataUrl);
+        }
+      });
+    }
+    tryCapture();
   });
 }
 
@@ -188,7 +171,7 @@ async function openEditor(dataUrl) {
 }
 
 function loadEditor() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL('editor.css');
@@ -199,7 +182,13 @@ function loadEditor() {
         editorLoaded = true;
         resolve();
       };
+      script.onerror = () => {
+        reject(new Error('Failed to load editor.js'));
+      };
       document.head.appendChild(script);
+    };
+    link.onerror = () => {
+      reject(new Error('Failed to load editor.css'));
     };
     document.head.appendChild(link);
   });

@@ -4,10 +4,11 @@
   let E = {
     dataUrl: null, canvas: null, ctx: null,
     w: 0, h: 0, dpr: 1,
-    tool: 'pencil', color: '#ffffff', size: 3,
+    tool: 'pencil', color: '#000000', size: 3,
     history: [], historyIndex: -1,
     drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
-    container: null, textInput: null, img: null
+    container: null, textInput: null, img: null,
+    blurSize: 10
   };
 
   document.addEventListener('screenshot-open-editor', function (e) {
@@ -81,6 +82,8 @@
     saveHistory();
     setupCanvasEvents();
     setupDrag(header, el);
+    setupResize(el);
+    addVersionLabel(el);
   }
 
   function buildToolbar() {
@@ -90,7 +93,7 @@
     var g1 = document.createElement('div');
     g1.className = 'tool-group';
     var tools = [
-      { id: 'cursor', icon: '\u2a31', title: 'Cursor' },
+      { id: 'cursor', icon: '\u2716', title: 'Cursor' },
       { id: 'pencil', icon: '\u270f', title: 'Pencil' },
       { id: 'brush', icon: '\ud83d\udd8c', title: 'Brush' },
       { id: 'line', icon: '\u2571', title: 'Line' },
@@ -114,19 +117,20 @@
 
     var g2 = document.createElement('div');
     g2.className = 'tool-group';
-    var colors = ['#ffffff', '#ff4444', '#ff8800', '#ffdd00', '#00cc44', '#aa66ff'];
+    var colors = ['#000000', '#ff4444', '#ff8800', '#ffdd00', '#00cc44', '#aa66ff'];
     colors.forEach(function (c) {
       var sw = document.createElement('div');
-      sw.className = 'screenshot-color-swatch' + (c === '#ffffff' ? ' active' : '');
+      sw.className = 'screenshot-color-swatch' + (c === '#000000' ? ' active' : '');
       sw.style.background = c;
       sw.dataset.color = c;
+      if (c === '#000000') sw.style.borderColor = '#666';
       sw.addEventListener('click', function () { selectColor(c, sw); });
       g2.appendChild(sw);
     });
     var cp = document.createElement('input');
     cp.type = 'color';
     cp.id = 'screenshot-color-picker';
-    cp.value = '#ffffff';
+    cp.value = '#000000';
     cp.addEventListener('input', function (e) {
       selectColor(e.target.value, cp);
     });
@@ -148,6 +152,9 @@
     slider.addEventListener('input', function (e) {
       E.size = parseInt(e.target.value, 10);
       sl.textContent = E.size + 'px';
+      if (E.tool === 'blur') {
+        E.blurSize = E.size;
+      }
     });
     g3.appendChild(sl);
     g3.appendChild(slider);
@@ -173,6 +180,9 @@
 
   function selectTool(id) {
     E.tool = id;
+    if (id === 'blur') {
+      E.blurSize = E.size;
+    }
     var btns = document.querySelectorAll('.screenshot-tool-btn');
     btns.forEach(function (b) { b.classList.remove('active'); });
     var active = document.querySelector('.screenshot-tool-btn[data-tool="' + id + '"]');
@@ -184,8 +194,12 @@
     E.color = color;
     document.querySelectorAll('.screenshot-color-swatch').forEach(function (s) {
       s.classList.remove('active');
+      if (s.dataset.color === '#000000') s.style.borderColor = 'transparent';
     });
-    if (el && el.classList) el.classList.add('active');
+    if (el && el.classList) {
+      el.classList.add('active');
+      if (color === '#000000') el.style.borderColor = '#666';
+    }
   }
 
   function setupCanvasEvents() {
@@ -361,7 +375,8 @@
     var tempCtx = tempCanvas.getContext('2d');
     tempCtx.putImageData(imageData, 0, 0);
 
-    tempCtx.filter = 'blur(10px)';
+    var blurAmount = E.blurSize || 10;
+    tempCtx.filter = 'blur(' + blurAmount + 'px)';
     tempCtx.drawImage(tempCanvas, 0, 0);
 
     var blurred = tempCtx.getImageData(0, 0, w, h);
@@ -500,5 +515,51 @@
         handle.style.cursor = 'move';
       }
     });
+  }
+
+  function setupResize(el) {
+    var resizeHandle = document.createElement('div');
+    resizeHandle.className = 'screenshot-editor-resize';
+    resizeHandle.innerHTML = '\u21F2';
+    el.appendChild(resizeHandle);
+
+    var startX, startY, startW, startH, isResizing = false;
+
+    resizeHandle.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      var rect = el.getBoundingClientRect();
+      startW = rect.width;
+      startH = rect.height;
+      document.body.style.cursor = 'se-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!isResizing) return;
+      var newW = startW + (e.clientX - startX);
+      var newH = startH + (e.clientY - startY);
+      el.style.width = Math.max(300, newW) + 'px';
+      el.style.maxHeight = '95vh';
+      el.style.overflow = 'hidden';
+    });
+
+    document.addEventListener('mouseup', function () {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    });
+  }
+
+  function addVersionLabel(el) {
+    var version = document.createElement('div');
+    version.className = 'screenshot-editor-version';
+    version.textContent = 'Version: 1.00';
+    el.appendChild(version);
   }
 })();
