@@ -191,13 +191,9 @@ async function openEditor(dataUrl) {
   document.dispatchEvent(new CustomEvent('screenshot-close-editor'));
   await new Promise(r => setTimeout(r, 30));
 
-  var oldLink = document.querySelector('link[href*="editor.css"]');
-  if (oldLink) oldLink.remove();
-  var oldScript = document.querySelector('script[src*="editor.js"]');
-  if (oldScript) oldScript.remove();
-  editorLoaded = false;
-
-  await loadEditor();
+  if (!editorLoaded) {
+    await loadEditor();
+  }
 
   document.dispatchEvent(new CustomEvent('screenshot-open-editor', {
     detail: { dataUrl, devicePixelRatio: window.devicePixelRatio || 1 }

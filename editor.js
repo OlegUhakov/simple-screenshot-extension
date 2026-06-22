@@ -40,8 +40,6 @@
       E.container.remove();
       E.container = null;
     }
-    document.removeEventListener('screenshot-open-editor', onOpenEditor);
-    document.removeEventListener('screenshot-close-editor', onCloseEditor);
     E = {
       dataUrl: null, canvas: null, ctx: null,
       w: 0, h: 0, dpr: 1,
@@ -106,7 +104,13 @@
     addVersionLabel(el);
 
     E.container.addEventListener('click', function (e) {
-      if (e.target === E.container) closeEditor();
+      if (e.target === E.container || e.target === el) closeEditor();
+    });
+    document.addEventListener('keydown', function onKey(e) {
+      if (e.key === 'Escape' && E.container) {
+        closeEditor();
+        document.removeEventListener('keydown', onKey);
+      }
     });
   }
 
