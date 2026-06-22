@@ -224,6 +224,7 @@
 
   function onMouseDown(e) {
     if (E.tool === 'cursor') return;
+    E.ctx.globalCompositeOperation = 'source-over';
     var p = getCanvasCoords(e);
     E.drawing = true;
     E.startX = p.x;
@@ -276,6 +277,8 @@
       E.lastY = p.y;
     } else if (E.tool === 'blur') {
       renderBlurSelection(p);
+    } else if (E.tool === 'line' || E.tool === 'arrow' || E.tool === 'rect' || E.tool === 'circle') {
+      renderShapePreview(p);
     }
   }
 
@@ -306,6 +309,10 @@
     var h = Math.abs(p.y - E.startY);
 
     if (w < 1 && h < 1) return;
+
+    if (E.history[E.historyIndex]) {
+      E.ctx.putImageData(E.history[E.historyIndex], 0, 0);
+    }
 
     E.ctx.beginPath();
 
@@ -359,6 +366,46 @@
     ctx.setLineDash([6, 4]);
     ctx.strokeRect(x, y, w, h);
     ctx.setLineDash([]);
+  }
+
+  function renderShapePreview(p) {
+    var ctx = E.ctx;
+
+    if (E.history[E.historyIndex]) {
+      ctx.putImageData(E.history[E.historyIndex], 0, 0);
+    } else {
+      ctx.clearRect(0, 0, E.w, E.h);
+      ctx.drawImage(E.img, 0, 0);
+    }
+
+    ctx.save();
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = E.size;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+
+    var x = Math.min(E.startX, p.x);
+    var y = Math.min(E.startY, p.y);
+    var w = Math.abs(p.x - E.startX);
+    var h = Math.abs(p.y - E.startY);
+
+    if (E.tool === 'line' || E.tool === 'arrow') {
+      ctx.moveTo(E.startX, E.startY);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    } else if (E.tool === 'rect') {
+      ctx.strokeRect(x, y, w, h);
+    } else if (E.tool === 'circle') {
+      var cx = x + w / 2;
+      var cy = y + h / 2;
+      var rx = w / 2;
+      var ry = h / 2;
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 
   function applyBlur(p) {
@@ -416,8 +463,8 @@
       'left: ' + (p.x * scaleX + rect.left - wrapper.getBoundingClientRect().left) + 'px;',
       'top: ' + (p.y * scaleY + rect.top - wrapper.getBoundingClientRect().top) + 'px;',
       'z-index: 9999999;',
-      'background: transparent;',
-      'border: 1px dashed #00cc44;',
+      'background: #fff;',
+      'border: 1px solid #00cc44;',
       'color: ' + E.color + ';',
       'font-size: ' + Math.max(16, E.size * 3) + 'px;',
       'font-family: Arial, sans-serif;',
@@ -427,25 +474,30 @@
     ].join('');
 
     wrapper.appendChild(input);
-    input.focus();
+    setTimeout(function () { input.focus(); }, 0);
 
     E.textInput = input;
 
+    var committed = false;
     var commit = function () {
+      if (committed) return;
+      committed = true;
       var text = input.value;
       if (text) {
+        E.ctx.globalCompositeOperation = 'source-over';
         E.ctx.font = Math.max(16, E.size * 3) + 'px Arial, sans-serif';
         E.ctx.fillStyle = E.color;
         E.ctx.fillText(text, p.x, p.y + Math.max(16, E.size * 3));
         saveHistory();
       }
+      input.removeEventListener('blur', commit);
       input.remove();
       E.textInput = null;
     };
 
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); commit(); }
-      if (e.key === 'Escape') { input.remove(); E.textInput = null; }
+      if (e.key === 'Escape') { input.removeEventListener('blur', commit); input.remove(); E.textInput = null; }
     });
     input.addEventListener('blur', commit);
   }
