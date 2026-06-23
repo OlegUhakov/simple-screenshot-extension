@@ -653,16 +653,6 @@
 
       el.style.width = newW + 'px';
       el.style.height = newH + 'px';
-
-      var headerEl = document.getElementById('screenshot-editor-header');
-      var toolbarEl = document.getElementById('screenshot-editor-toolbar');
-      var headerH = headerEl ? headerEl.offsetHeight : 44;
-      var toolbarH = toolbarEl ? toolbarEl.offsetHeight : 52;
-
-      E.canvas.style.width = newW + 'px';
-      E.canvas.style.height = (newH - headerH - toolbarH) + 'px';
-      E.canvas.style.maxWidth = 'none';
-      E.canvas.style.maxHeight = 'none';
     }
 
     function onMouseUp() {

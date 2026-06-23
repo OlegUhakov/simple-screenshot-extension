@@ -34,19 +34,21 @@ async function handleCapture(mode, delay) {
   try {
     cleanupPrevious();
 
-    if (delay > 0) {
-      await new Promise(r => setTimeout(r, delay * 1000));
-    } else {
-      await new Promise(r => setTimeout(r, 200));
-    }
-
     if (mode === 'fullscreen') {
+      if (delay > 0) {
+        await new Promise(r => setTimeout(r, delay * 1000));
+      } else {
+        await new Promise(r => setTimeout(r, 200));
+      }
       const dataUrl = await requestCapture();
       if (!dataUrl) { showError('Capture failed'); return; }
       await openEditor(dataUrl);
     } else if (mode === 'select') {
       const rect = await selectArea();
       if (!rect || rect.w < 5 || rect.h < 5) return;
+      if (delay > 0) {
+        await new Promise(r => setTimeout(r, delay * 1000));
+      }
       const fullDataUrl = await requestCapture();
       if (!fullDataUrl) { showError('Capture failed'); return; }
       const croppedDataUrl = await cropImage(fullDataUrl, rect);
