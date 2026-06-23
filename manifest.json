@@ -3,7 +3,7 @@
   "name": "Screenshot Tool",
   "version": "1.0.0",
   "description": "Make screenshots with annotations",
-  "permissions": ["activeTab", "scripting", "downloads", "tabs", "storage"],
+  "permissions": ["activeTab", "scripting", "downloads", "tabs", "storage", "clipboardWrite"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",

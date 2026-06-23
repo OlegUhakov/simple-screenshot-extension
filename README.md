@@ -1,4 +1,4 @@
-# Simple Screenshot Extension
+# Screenshot Tool
 
 A Chrome/Edge extension (MV3) for taking screenshots with annotations.
 
@@ -25,5 +25,17 @@ A Chrome/Edge extension (MV3) for taking screenshots with annotations.
 1. Click the extension icon in the toolbar
 2. Choose **Select Area** or **Full Screen**
 3. Optionally set a timer
-4. The editor will open after the screenshot is taken
-5. Add annotations and Save or Copy the result
+4. The editor opens after the screenshot is taken
+5. Add annotations, then Save or Copy the result
+
+## Project structure
+
+```
+├── manifest.json          # Extension manifest (MV3)
+├── background.js          # Service worker
+├── content.js             # Content script (capture, selection UI)
+├── popup.html / popup.js  # Popup UI
+├── editor.js              # Annotation editor
+├── editor.css             # Editor styles
+└── icons/                 # Extension icons
+```

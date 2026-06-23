@@ -8,7 +8,7 @@
     history: [], historyIndex: -1,
     drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
     container: null, textInput: null, img: null,
-    blurSize: 10,
+    blurSize: 10, justResized: false,
     cleanups: []
   };
 
@@ -47,7 +47,7 @@
       history: [], historyIndex: -1,
       drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
       container: null, textInput: null, img: null,
-      blurSize: 10,
+      blurSize: 10, justResized: false,
       cleanups: []
     };
   }
@@ -441,21 +441,20 @@
     var h = Math.abs(p.y - E.startY);
     if (w < 2 || h < 2) return;
 
-    var ctx = E.ctx;
-    var imageData = ctx.getImageData(x, y, w, h);
-
+    var blurAmount = Math.min(E.blurSize || 10, 30);
     var tempCanvas = document.createElement('canvas');
     tempCanvas.width = w;
     tempCanvas.height = h;
     var tempCtx = tempCanvas.getContext('2d');
-    tempCtx.putImageData(imageData, 0, 0);
 
-    var blurAmount = Math.min(E.blurSize || 10, 30);
-    tempCtx.filter = 'blur(' + blurAmount + 'px)';
-    tempCtx.drawImage(tempCanvas, 0, 0);
-
-    var blurred = tempCtx.getImageData(0, 0, w, h);
-    ctx.putImageData(blurred, x, y);
+    var scale = Math.max(1, blurAmount / 2);
+    var sw = Math.max(1, Math.round(w / scale));
+    var sh = Math.max(1, Math.round(h / scale));
+    tempCtx.drawImage(E.canvas, x, y, w, h, 0, 0, sw, sh);
+    E.ctx.save();
+    E.ctx.filter = 'blur(' + blurAmount + 'px)';
+    E.ctx.drawImage(tempCanvas, 0, 0, sw, sh, x, y, w, h);
+    E.ctx.restore();
 
     saveHistory();
   }
@@ -661,8 +660,11 @@
         isResizing = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
+        var container = E.container;
         E.justResized = true;
-        setTimeout(function () { E.justResized = false; }, 200);
+        setTimeout(function () {
+          if (E.container === container) E.justResized = false;
+        }, 200);
       }
     }
 
@@ -679,7 +681,7 @@
   function addVersionLabel(el) {
     var version = document.createElement('div');
     version.className = 'screenshot-editor-version';
-    version.textContent = 'Version: 1.00';
+    version.textContent = 'Version: 1.0.0';
     el.appendChild(version);
   }
 })();
