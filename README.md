@@ -1,3 +1,5 @@
+![menu](menu.png)
+![screen](screen.png)
 # Screenshot Tool
 
 A Chrome/Edge extension (MV3) for taking screenshots with annotations.
