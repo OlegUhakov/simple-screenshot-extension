@@ -79,12 +79,6 @@
     E.canvas.id = 'screenshot-editor-canvas';
     E.canvas.width = E.w;
     E.canvas.height = E.h;
-    var maxW = Math.min(E.w, window.innerWidth * 0.85);
-    var maxH = Math.min(E.h, window.innerHeight * 0.7);
-    E.canvas.style.maxWidth = maxW + 'px';
-    E.canvas.style.maxHeight = maxH + 'px';
-    E.canvas.style.width = Math.min(E.w, maxW) + 'px';
-    E.canvas.style.height = Math.min(E.h, maxH) + 'px';
 
     wrapper.appendChild(E.canvas);
     body.appendChild(wrapper);
@@ -121,7 +115,6 @@
     var g1 = document.createElement('div');
     g1.className = 'tool-group';
     var tools = [
-      { id: 'cursor', icon: '\u2716', title: 'Cursor' },
       { id: 'pencil', icon: '\u270f', title: 'Pencil' },
       { id: 'brush', icon: '\ud83d\udd8c', title: 'Brush' },
       { id: 'line', icon: '\u2571', title: 'Line' },
@@ -227,7 +220,7 @@
     btns.forEach(function (b) { b.classList.remove('active'); });
     var active = document.querySelector('.screenshot-tool-btn[data-tool="' + id + '"]');
     if (active) active.classList.add('active');
-    E.canvas.style.cursor = id === 'cursor' ? 'default' : 'crosshair';
+    E.canvas.style.cursor = 'crosshair';
   }
 
   function selectColor(color, el) {
@@ -261,7 +254,6 @@
   }
 
   function onMouseDown(e) {
-    if (E.tool === 'cursor') return;
     E.ctx.globalCompositeOperation = 'source-over';
     var p = getCanvasCoords(e);
     E.drawing = true;
@@ -279,10 +271,6 @@
       return;
     }
 
-    if (E.tool === 'eraser') {
-      E.ctx.globalCompositeOperation = 'destination-out';
-    }
-
     E.ctx.beginPath();
     E.ctx.lineCap = 'round';
     E.ctx.lineJoin = 'round';
@@ -296,7 +284,7 @@
       E.ctx.beginPath();
       E.ctx.moveTo(E.lastX, E.lastY);
       E.ctx.lineTo(p.x, p.y);
-      E.ctx.strokeStyle = E.tool === 'eraser' ? 'rgba(0,0,0,1)' : E.color;
+      E.ctx.strokeStyle = E.tool === 'eraser' ? '#ffffff' : E.color;
       E.ctx.lineWidth = E.size;
       E.ctx.stroke();
       E.lastX = p.x;
@@ -326,7 +314,6 @@
     E.drawing = false;
 
     if (E.tool === 'eraser') {
-      E.ctx.globalCompositeOperation = 'source-over';
       saveHistory();
       return;
     }
@@ -627,7 +614,7 @@
     resizeHandle.innerHTML = '\u21F2';
     el.appendChild(resizeHandle);
 
-    var startX, startY, startW, startH, isResizing = false;
+    var startX, startY, startW, startH, aspectRatio, isResizing = false;
 
     function onMouseDown(e) {
       e.preventDefault();
@@ -637,6 +624,7 @@
       startY = e.clientY;
       startW = el.offsetWidth;
       startH = el.offsetHeight;
+      aspectRatio = startW / startH;
       document.body.style.cursor = 'se-resize';
       document.body.style.userSelect = 'none';
     }
@@ -645,11 +633,23 @@
       if (!isResizing) return;
       var dx = e.clientX - startX;
       var dy = e.clientY - startY;
-      var newW = Math.max(200, startW + dx);
-      var newH = Math.max(350, startH + dy);
 
-      newW = Math.min(newW, window.innerWidth * 0.95);
-      newH = Math.min(newH, window.innerHeight * 0.95);
+      var newW = Math.max(200, startW + dx);
+      var newH = newW / aspectRatio;
+
+      if (newH < 350) {
+        newH = 350;
+        newW = newH * aspectRatio;
+      }
+
+      if (newW > window.innerWidth * 0.95) {
+        newW = window.innerWidth * 0.95;
+        newH = newW / aspectRatio;
+      }
+      if (newH > window.innerHeight * 0.95) {
+        newH = window.innerHeight * 0.95;
+        newW = newH * aspectRatio;
+      }
 
       el.style.width = newW + 'px';
       el.style.height = newH + 'px';

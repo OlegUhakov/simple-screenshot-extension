@@ -93,10 +93,10 @@ function selectArea() {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.id = 'screenshot-select-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:999999;cursor:crosshair;';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:transparent;z-index:999999;cursor:crosshair;';
 
     const tip = document.createElement('div');
-    tip.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font:16px Arial,sans-serif;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,0.5);';
+    tip.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#333;font:16px Arial,sans-serif;pointer-events:none;background:rgba(255,255,255,0.9);padding:8px 16px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15);';
     tip.textContent = 'Click and drag to select area';
     overlay.appendChild(tip);
 
