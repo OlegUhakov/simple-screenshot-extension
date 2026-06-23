@@ -98,6 +98,7 @@
     addVersionLabel(el);
 
     E.container.addEventListener('click', function (e) {
+      if (E.justResized) return;
       if (e.target === E.container || e.target === el) closeEditor();
     });
     document.addEventListener('keydown', function onKey(e) {
@@ -660,6 +661,8 @@
         isResizing = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
+        E.justResized = true;
+        setTimeout(function () { E.justResized = false; }, 200);
       }
     }
 

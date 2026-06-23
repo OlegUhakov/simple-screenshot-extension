@@ -1,5 +1,8 @@
 let editorLoaded = false;
 
+if (!window.__screenshotExtensionInitialized) {
+  window.__screenshotExtensionInitialized = true;
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'capture') {
     handleCapture(request.mode, request.delay);
@@ -221,3 +224,5 @@ function loadEditor() {
     document.head.appendChild(link);
   });
 }
+
+} // end if (!window.__screenshotExtensionInitialized)
